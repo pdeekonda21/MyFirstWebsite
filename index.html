@@ -109,7 +109,7 @@
             max-width: 420px;
             max-height: 90vh;
             overflow-y: auto;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
             padding: 32px;
             border-radius: 36px;
             background: rgba(255, 255, 255, 0.02);
@@ -126,7 +126,7 @@
         }
         
         .step-view::-webkit-scrollbar {
-            display: none; /* Safari and Chrome */
+            display: none;
         }
 
         .step-view.active {
@@ -190,7 +190,7 @@
         }
 
         /* ==========================================================================
-           STEP 1: NEW BRICK PUZZLE SYSTEM
+           STEP 1: BRICK PUZZLE SYSTEM
            ========================================================================== */
         .profile-frame {
             width: 120px;
@@ -304,6 +304,38 @@
             justify-content: center;
         }
 
+        /* Clean Unified Solid Mask - Completely hides internal quarter gaps before slice */
+        .cake-solid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 105px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .cake-solid-top {
+            width: 200px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffb6c1, #ffc0cb);
+            border-radius: 100px / 24px;
+            position: absolute;
+            top: 0;
+            box-shadow: inset 0 6px 12px rgba(255,255,255,0.6);
+        }
+
+        .cake-solid-body {
+            width: 200px;
+            height: 80px;
+            background: linear-gradient(180deg, #ff8da1, #d63031);
+            border-radius: 0 0 32px 32px;
+            position: absolute;
+            top: 24px;
+        }
+        .cake-solid-body::before { content: ''; position: absolute; top: 18px; left: 0; width: 100%; height: 6px; background: #fff; opacity: 0.95; }
+        .cake-solid-body::after { content: ''; position: absolute; top: 48px; left: 0; width: 100%; height: 6px; background: #fff; opacity: 0.95; }
+
         .cake-quarter {
             width: 100px;
             height: 60px;
@@ -394,8 +426,6 @@
         }
 
         .knife-handle { width: 40px; height: 14px; background: #4a2711; border-radius: 5px 0 0 5px; position: absolute; top: 2px; left: 0; }
-        .cut-track { position: absolute; top: 0; left: 50%; width: 2px; height: 100%; background: rgba(255, 216, 117, 0.25); border-style: dashed; pointer-events: none; }
-        .cut-track-h { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(255, 216, 117, 0.25); border-style: dashed; pointer-events: none; }
 
         /* ==========================================================================
            STEP 3: CAKE SLICE & BITE SYSTEM
@@ -449,7 +479,7 @@
         .ultimate-card-text { font-size: 15px; color: #fff; line-height: 1.6; margin-top: 25px; background: rgba(255, 255, 255, 0.04); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); display: none; }
 
         /* ==========================================================================
-           STEP 6: MEMORY SCROLL RESPONSIVE VIEWPORT
+           STEP 6: MEMORY SCROLL VIEWPORT
            ========================================================================== */
         .polaroid-wrapper {
             background: white; padding: 12px 12px 24px; border-radius: 6px;
@@ -464,7 +494,7 @@
         .signature { font-family: 'Oooh Baby', cursive; font-size: 26px; color: #ff7eb3; margin-top: 18px; }
     </style>
 </head>
-<body>
+<body onclick="triggerMusicOnStart()">
 
     <!-- Layer Canvas Engine Nodes -->
     <div class="ambient-bg"></div>
@@ -504,9 +534,13 @@
             <p class="section-instruction" id="cakeInstruction">Cake koi iga wait enduku.</p>
             
             <div class="interactive-arena" id="arenaStep2">
-                <div class="cut-track"></div>
-                <div class="cut-track-h"></div>
                 <div class="cake-container" id="cakeGridSystem">
+                    <!-- Clean Seamless Mask Covering Grid Gaps Completely -->
+                    <div class="cake-solid-overlay" id="cakeSolidMask">
+                        <div class="cake-solid-top"></div>
+                        <div class="cake-solid-body"></div>
+                    </div>
+
                     <div class="cake-quarter q-top-left" id="qTL"><div class="cake-layer-top"></div><div class="cake-layer-body"></div></div>
                     <div class="cake-quarter q-top-right" id="qTR"><div class="cake-layer-top"></div><div class="cake-layer-body"></div></div>
                     <div class="cake-quarter q-bottom-left" id="qBL"><div class="cake-layer-top"></div><div class="cake-layer-body"></div></div>
@@ -590,7 +624,7 @@
             <button class="btn-premium hidden" id="nextTo6" onclick="navigateToStep(6)"><span>saalu le iga late aindi idi nokku inka</span></button>
         </section>
 
-        <!-- STEP 6: ADAPTIVE RESPONSIVE LETTERS FINALE -->
+        <!-- STEP 6: ADAPTIVE LETTERS FINALE -->
         <section class="step-view" id="view6">
             <div class="polaroid-wrapper">
                 <img src="photo2.jpeg" alt="Memory Frame with Bestie" class="polaroid-img">
@@ -610,9 +644,9 @@
     <!-- Canvas Confetti Engine Asset CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-    <!-- Audio Source Framework -->
+    <!-- Public Instrumental Birthday Loop Stream -->
     <audio id="audioTrack" loop preload="auto">
-        <source src="https://www.bensound.com/bensound-music/bensound-tenderness.mp3" type="audio/mpeg">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -628,6 +662,69 @@
             'Nito kadu le next di open chey 😄',
             'Bokka le em konle'
         ];
+
+        // Native Audio Synthesis Engine (For Instant Click & Action Feedback)
+        let audioCtx = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSoundEffect(type) {
+            initAudioContext();
+            if (!audioCtx || isMuted) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'brick') { // Brick Lock Click
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.08);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'slice') { // Slice Swish 
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(320, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'bite') { // Pop Bite
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'feed') { // Magic Chime Feed
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'click') { // Standard Button Click
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
 
         // Particle Engines Physics Configuration
         const canvas = document.getElementById('renderCanvas');
@@ -701,15 +798,21 @@
         const audio = document.getElementById('audioTrack');
 
         function triggerMusicOnStart() {
+            initAudioContext();
             if (isMuted) {
-                audio.play().catch(e => console.log("Audio contexts protected."));
-                musicBtn.textContent = '♫';
-                musicBtn.style.background = 'rgba(255, 117, 140, 0.2)';
-                isMuted = false;
+                audio.play()
+                    .then(() => {
+                        musicBtn.textContent = '♫';
+                        musicBtn.style.background = 'rgba(255, 117, 140, 0.2)';
+                        isMuted = false;
+                    })
+                    .catch(e => console.log("Playback engine waiting for interaction node."));
             }
         }
 
-        musicBtn.addEventListener('click', () => {
+        musicBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            initAudioContext();
             if (isMuted) {
                 audio.play().catch(e => console.log("Audio locked."));
                 musicBtn.textContent = '♫';
@@ -725,6 +828,7 @@
 
         // App Scene Route Dispatcher
         function navigateToStep(targetStep) {
+            playSoundEffect('click');
             document.getElementById(`view${currentStep}`).classList.remove('active');
             currentStep = targetStep;
             
@@ -737,12 +841,11 @@
         }
 
         /* ==========================================================================
-           STEP 1: NEW BRICK STACKING ENGINE
+           STEP 1: BRICK STACKING ENGINE
            ========================================================================== */
         function setupStep1BrickPuzzle() {
             const bricks = document.querySelectorAll('.puzzle-brick');
             const targetStack = document.getElementById('brickStackTarget');
-            const arena = document.getElementById('brickArena');
             
             bricks.forEach(brick => {
                 let isDragging = false;
@@ -777,7 +880,6 @@
                     const tRect = targetStack.getBoundingClientRect();
                     const bRect = brick.getBoundingClientRect();
 
-                    // Collision checking with stack center area
                     if (bRect.right > tRect.left && bRect.left < tRect.right &&
                         bRect.bottom > tRect.top && bRect.top < tRect.bottom) {
                         isDragging = false;
@@ -789,7 +891,6 @@
                     if (!isDragging) return;
                     isDragging = false;
                     brick.style.cursor = 'grab';
-                    // return back to layout pool safely if let go outside boundary
                     brick.style.left = brick.classList.contains('brick-1') ? '10px' : brick.classList.contains('brick-2') ? '100px' : '190px';
                     brick.style.top = 'auto';
                 }
@@ -808,6 +909,7 @@
                 targetStack.appendChild(brickElement);
                 stackedBricksCount++;
 
+                playSoundEffect('brick');
                 confetti({ particleCount: 20, spread: 30 });
 
                 if (stackedBricksCount === 3) {
@@ -817,11 +919,12 @@
         }
         window.addEventListener('DOMContentLoaded', setupStep1BrickPuzzle);
 
-        // STEP 2: CAKE INTERACTION SYSTEM (MULTIPLE PIECES CUT DIALOGUE)
+        // STEP 2: CAKE CUT SYSTEM
         function setupStep2KnifeDrag() {
             const knife = document.getElementById('interactiveKnife');
             const arena = document.getElementById('arenaStep2');
             const candle = document.getElementById('mainCandle');
+            const solidMask = document.getElementById('cakeSolidMask');
             
             let isDragging = false;
             let startX, startY, initialLeft, initialTop;
@@ -858,7 +961,7 @@
                 const arenaCenterX = arenaBound.left + arenaBound.width / 2;
                 const arenaCenterY = arenaBound.top + arenaBound.height / 2;
 
-                if (Math.abs(knifeCenterX - arenaCenterX) < 25 && Math.abs(knifeCenterY - arenaCenterY) < 30) {
+                if (Math.abs(knifeCenterX - arenaCenterX) < 30 && Math.abs(knifeCenterY - arenaCenterY) < 35) {
                     isDragging = false;
                     cutExecuted = true;
                     executeFourWaySlice();
@@ -885,14 +988,15 @@
             function executeFourWaySlice() {
                 candle.style.opacity = '0';
                 knife.style.display = 'none';
+                solidMask.style.display = 'none'; 
 
-                // Transform all 4 pieces outward dynamically
+                playSoundEffect('slice');
+
                 document.getElementById('qTL').style.transform = 'translate(-25px, -20px) rotate(-8deg)';
                 document.getElementById('qTR').style.transform = 'translate(25px, -20px) rotate(8deg)';
                 document.getElementById('qBL').style.transform = 'translate(-25px, 20px) rotate(-8deg)';
                 document.getElementById('qBR').style.transform = 'translate(25px, 20px) rotate(8deg)';
 
-                // Fun customized dialogue string injection 
                 document.getElementById('cakeInstruction').textContent = 'Cake pieces ready! 🍰';
                 const label = document.getElementById('cakeCutDialogue');
                 label.innerHTML = "<strong>Niku okati, me mummy okati,<br>me daddy okati, me Anna ki okati!</strong>";
@@ -906,9 +1010,10 @@
             }
         }
 
-        // STEP 3: BITE COUNTER ARCHACT
+        // STEP 3: BITE SYSTEM
         function handleBiteSequence() {
             biteCount++;
+            playSoundEffect('bite');
             const slice = document.getElementById('targetSlice');
             const quote = document.getElementById('biteQuote');
             
@@ -1000,6 +1105,7 @@
                 baseGraphics.style.display = 'none';
                 imageDisplay.style.display = 'block';
                 
+                playSoundEffect('feed');
                 document.getElementById('feedQuote').classList.add('reveal');
                 confetti({ particleCount: 70, spread: 50 });
                 
@@ -1013,8 +1119,9 @@
         function unwrapStandardBox(element) {
             if (element.classList.contains('opened')) return;
             
+            playSoundEffect('brick');
             element.classList.add('opened');
-            element.classList.add('disabled'); // Disable further clicks on this specific box
+            element.classList.add('disabled'); 
             
             const currentMessage = giftMessages[boxesOpenedCount];
             boxesOpenedCount++;
@@ -1032,6 +1139,7 @@
         }
 
         function triggerGrandReveal() {
+            playSoundEffect('click');
             document.getElementById('finalChest').style.display = 'none';
             document.getElementById('revealLoader').style.display = 'block';
             
@@ -1050,6 +1158,7 @@
                 clearInterval(interval);
                 document.getElementById('revealLoader').style.display = 'none';
                 
+                playSoundEffect('feed');
                 const frameQuote = document.getElementById('finalQuoteText');
                 frameQuote.style.display = 'block';
                 frameQuote.innerHTML = "The real gift is the time we spent together! 😉🎁";
